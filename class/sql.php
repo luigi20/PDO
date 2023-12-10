@@ -27,44 +27,41 @@ class Sql extends PDO {
 
   public function select($rawQuery,$params = array()){
     $stmt = $this->queryWithParams($rawQuery, $params);
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    return $stmt->fetchAll();
   }
 
-  public function create ($book){
-    $stmt = $this->conn->prepare("INSERT INTO books (name, category) VALUES (:name, :category)");
-    $Sname = $book->getName();
-    $Scategory= $book->getCategory();
-    $stmt->bindParam(':name', $Sname);
-    $stmt->bindParam(':category', $Scategory);
-    $stmt->execute();
-    $book->setBookId($this->conn->lastInsertId());
+  public function create($book){
+    $rawQuery = "INSERT INTO books (name, category) VALUES (:name, :category)";
+    $params = array(':name'=>$book->getName(),':category'=>$book->getCategory());
+    $results = $this->select($rawQuery,$params);
+    if(count($results) > 0){
+      $this->setData($results[0]);
+    }
     return $book;
   }
 
-  public function update ($book){
-    $stmt = $this->conn->prepare("UPDATE books SET name = :name, category = :category WHERE idbooks = :id");
-    $Ibook_id = $book->getBookId();
-    $Sname = $book->getName();
-    $Scategory= $book->getCategory();
-    $stmt->bindParam(':id', $Ibook_id);
-    $stmt->bindParam(':name', $Sname);
-    $stmt->bindParam(':category', $Scategory);
-    $stmt->execute();
-    return $book;
+  public function update($Obook){
+    $rawQuery = "UPDATE books SET name = :name, category = :category WHERE idbooks = :id";
+    $params = array(':id'=>$Obook->getBookId(),':name'=>$Obook->getName(),':category'=>$Obook->getCategory());
+    $results = $this->select($rawQuery,$params);
+    if(count($results) > 0){
+      $this->setData($results[0]);
+    }
   }
 
-  public function delete ($Iid){
-    $stmt = $this->conn->prepare("DELETE FROM books WHERE idbooks = :id");
-    $stmt->bindParam(':id', $Iid);
-    $stmt->execute();
+  public function delete($Iid){
+    $rawQueryDelete = "DELETE FROM books WHERE idbooks = :id";
+    $params = array(':id'=>$Iid);
+    $this->select($rawQueryDelete,$params);
   }
 
   public function setData($data){
-  $Sbook = new Book();
-  $Sbook->setBookId($data['book_id']);
-  $Sbook->setName($data['name']);
-  $Sbook->setCategory($data['category']);
-}
+   $Obook = new Book();
+   $Obook->setBookId($data['book_id']);
+   $Obook->setName($data['name']);
+   $Obook->setCategory($data['category']);
+   echo $Obook;
+ }
 }
 
 ?>

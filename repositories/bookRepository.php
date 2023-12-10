@@ -3,14 +3,13 @@ require_once("interface/IBookRepository.php");
 class BookRepository extends Book implements IBookRepository {
     public function findById($Iid){
         $sql = new Sql();
-        $results = $sql->select("SELECT * FROM books WHERE book_id = :ID", array(
+        $results = $sql->select("SELECT * FROM books WHERE idbooks = :ID", array(
             ":ID"=>$Iid
         ));
         if (count($results) > 0) {
             $row = $results[0];
-            $this->setBookId($row['book_id']);
-            $this->setName($row['name']);
-            $this->setCategory($row['category']);
+            $Obook = new Book($row['idbooks'],$row['name'],$row['category']);
+            return $Obook;
         }
     }
 
@@ -27,14 +26,24 @@ class BookRepository extends Book implements IBookRepository {
 
     public function update($Obook)
     {
-        $sql = new Sql();
-        return $sql->update($Obook);
+        $result = $this->findById($Obook->getBookId());
+        if (isset($result)) {
+         $sql = new Sql();
+         return $sql->update($Obook);
+        }else{
+          echo 'Livro inexistente';
+        }
     }
 
     public function delete($Iid)
     {
-        $sql = new Sql();
-        return $sql->delete($Iid);
+        $result = $this->findById($Iid);
+        if (isset($result)) {
+            $sql = new Sql();
+            return $sql->delete($Iid);
+        }else{
+            echo 'Livro inexistente';
+        }
     }
 
     public function __toString(){
